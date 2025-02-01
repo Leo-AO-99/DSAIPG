@@ -4,7 +4,13 @@
 
 package com.phasmidsoftware.dsaipg.misc.randomwalk;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * The RandomWalk class simulates a two-dimensional random walk. A "drunkard"
@@ -80,6 +86,33 @@ public class RandomWalk {
     }
 
     /**
+     * Execute multiple random walk experiments using multiple threads
+     *
+     * @param steps       the number of steps for each experiment
+     * @param experiments the number of experiments to run
+     * @return the mean distance
+     */
+    public static double parallelRandomWalk(int steps, int experiments) {
+        int numThreads = (experiments + 49) / 50;
+        experiments = numThreads * 50;
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        List<Future<Double>> futures = new ArrayList<>();
+        for (int i = 0; i < numThreads; i++) {
+            futures.add(executor.submit(() -> 50 * randomWalkMulti(steps, 50)));
+        }
+        executor.shutdown();
+        double totalDistance = 0;
+        for (Future<Double> future : futures) {
+            try {
+                totalDistance += future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                System.out.println(e);
+            }
+        }
+        return totalDistance / experiments;
+    }
+
+    /**
      * The main method serves as the entry point to the RandomWalk program. It
      * performs
      * either a single random walk experiment or several experiments, based on the
@@ -94,13 +127,39 @@ public class RandomWalk {
      *             invalid syntax.
      */
     public static void main(String[] args) {
-        if (args.length == 0)
-            throw new RuntimeException("Syntax: RandomWalk steps [experiments]");
-        int m = Integer.parseInt(args[0]);
-        int n = 30;
-        if (args.length > 1)
-            n = Integer.parseInt(args[1]);
-        double meanDistance = randomWalkMulti(m, n);
-        System.out.println(m + " steps: " + meanDistance + " over " + n + " experiments");
+        List<double[]> results = new ArrayList<>();
+        for (int i = 1; i < 100; i++) {
+            int steps = i * 100;
+            double meanDistance = parallelRandomWalk(steps, 10000);
+            results.add(new double[] { steps, meanDistance });
+        }
+
+        // Linear regression
+        double[] x = new double[results.size()];
+        double[] y = new double[results.size()];
+        double xMean = 0;
+        double yMean = 0;
+
+        for (int i = 0; i < results.size(); i++) {
+            x[i] = Math.sqrt(results.get(i)[0]);
+            y[i] = results.get(i)[1];
+            xMean += x[i];
+            yMean += y[i];
+        }
+
+        xMean = xMean / results.size();
+        yMean = yMean / results.size();
+
+        double numerator = 0;
+        double denominator = 0;
+        for (int i = 0; i < x.length; i++) {
+            numerator += (x[i] - xMean) * (y[i] - yMean);
+            denominator += (x[i] - xMean) * (x[i] - xMean);
+        }
+        double slope = numerator / denominator;
+        double intercept = yMean - slope * xMean;
+
+        System.out.println("slope = " + slope);
+        System.out.println("intercept = " + intercept);
     }
 }
