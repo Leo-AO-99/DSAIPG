@@ -1,12 +1,14 @@
 package com.phasmidsoftware.dsaipg.adt.threesum;
 
-import org.junit.Test;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+
+import com.phasmidsoftware.dsaipg.util.Stopwatch;
 
 public class ThreeSumTest {
 
@@ -99,5 +101,28 @@ public class ThreeSumTest {
         System.out.println("triples: " + Arrays.toString(triples));
         assertEquals(4, triples.length);
         assertEquals(4, new ThreeSumCubic(ints).getTriples().length);
+    }
+
+    @Test
+    public void testTiming() {
+        int[] N = {500, 600, 700, 800, 900, 1000, 2000, 3000, 4000};
+        for (int n : N) {
+            Supplier<int[]> intsSupplier = new Source(n, n, 314L).intsSupplier(10);
+            int[] a = intsSupplier.get();
+            ThreeSum cubic = new ThreeSumCubic(a);
+            ThreeSum quadratic = new ThreeSumQuadratic(a);
+            ThreeSum quadrithmic = new ThreeSumQuadrithmic(a);
+            Stopwatch benchmark = new Stopwatch();
+            Triple[] cubicTriples = cubic.getTriples();
+            long cubicTime = benchmark.lap();
+            Triple[] quadraticTriples = quadratic.getTriples();
+            long quadraticTime = benchmark.lap();
+            Triple[] quadrithmicTriples = quadrithmic.getTriples();
+            long quadrithmicTime = benchmark.lap();
+            benchmark.close();
+            System.out.println("N: " + n + " Cubic: " + cubicTime + " Quadratic: " + quadraticTime + " Quadrithmic: " + quadrithmicTime);
+            assertArrayEquals(cubicTriples, quadraticTriples);
+            assertArrayEquals(cubicTriples, quadrithmicTriples);
+        }
     }
 }

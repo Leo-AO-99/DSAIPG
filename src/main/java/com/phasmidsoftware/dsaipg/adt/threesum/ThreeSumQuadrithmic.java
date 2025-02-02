@@ -5,7 +5,6 @@
 package com.phasmidsoftware.dsaipg.adt.threesum;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -63,6 +62,22 @@ class ThreeSumQuadrithmic implements ThreeSum {
     Triple getTriple(int i, int j) {
         // TO BE IMPLEMENTED  : use binary search to find the third element
         // END SOLUTION
+        int target = -a[i] - a[j];
+        for (int l = 0, r = length - 1; l <= r;) {
+            int mid = (l + r) / 2;
+            if (a[mid] == target) {
+                if (mid == i || mid == j) {
+                    return null;
+                }
+                int min_x = Math.min(a[i], Math.min(a[j], a[mid]));
+                int max_x = Math.max(a[i], Math.max(a[j], a[mid]));
+                return new Triple(min_x, -min_x - max_x, max_x);
+            } else if (a[mid] < target) {
+                l = mid + 1;
+            } else {
+                r = mid - 1;
+            }
+        }
         return null;
     }
 
