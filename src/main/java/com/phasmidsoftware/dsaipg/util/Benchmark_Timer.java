@@ -48,6 +48,7 @@ public class Benchmark_Timer<T> implements Benchmark<T> {
      * @param m        the number of times the function f will be called.
      * @return the average number of milliseconds taken for each run of function f.
      */
+    @Override
     public double runFromSupplier(Supplier<T> supplier, int m) {
         logger.info("Begin run: " + description + " with " + formatWhole(m) + " runs");
         final Function<T, T> function = t -> {
