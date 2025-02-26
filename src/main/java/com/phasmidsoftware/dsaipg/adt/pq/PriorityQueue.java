@@ -4,7 +4,11 @@
 
 package com.phasmidsoftware.dsaipg.adt.pq;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
@@ -45,6 +49,7 @@ public class PriorityQueue<K> implements Iterable<K> {
         //noinspection unchecked
         this.binHeap = (K[]) binHeap;
         this.floyd = floyd;
+        this.dAry = 2;
     }
 
     /**
@@ -97,6 +102,10 @@ public class PriorityQueue<K> implements Iterable<K> {
         this(n, 1, true, comparator, true);
     }
 
+    public void setDary(int dAry) {
+        this.dAry = dAry;
+    }
+
     /**
      * @return true if the current size is zero.
      */
@@ -116,12 +125,14 @@ public class PriorityQueue<K> implements Iterable<K> {
      *
      * @param key the value of the key to give
      */
-    public void give(K key) {
+    public K give(K key) {
+        K ret = null;
         if (last == binHeap.length - first)
-            last--; // if we are already at capacity, then we arbitrarily trash the least eligible element
+            ret = binHeap[last-- + first - 1]; // if we are already at capacity, then we arbitrarily trash the least eligible element
         // (even if it's more eligible than key).
         binHeap[++last + first - 1] = key; // insert the key into the binary heap just after the last element
         swimUp(last + first - 1); // reorder the binary heap
+        return ret;
     }
 
     /**
@@ -223,10 +234,15 @@ public class PriorityQueue<K> implements Iterable<K> {
         int i = k;
         while (firstChild(i) <= last + first - 1) {
             int j = firstChild(i);
-            if (j < last + first - 1 && unordered(j, j + 1)) j++;
-            if (p.test(i, j)) break;
-            swap(i, j);
-            i = j;
+            int targetChild = j;
+            for (int c = 1; c < dAry && j + c <= last + first - 1; c++) {
+                if (unordered(targetChild, j + c)) {
+                    targetChild = j + c;
+                }
+            }
+            if (p.test(i, targetChild)) break;
+            swap(i, targetChild);
+            i = targetChild;
         }
         return i;
     }
@@ -244,7 +260,8 @@ public class PriorityQueue<K> implements Iterable<K> {
      * Get the index of the parent of the element at index k
      */
     private int parent(int k) {
-        return (k + 1 - first) / 2 + first - 1;
+        // return (k + 1 - first) / 2 + first + 1;
+        return (k - first) / dAry + first;
     }
 
     /**
@@ -252,7 +269,8 @@ public class PriorityQueue<K> implements Iterable<K> {
      * The index of the second child will be one greater than the result.
      */
     private int firstChild(int k) {
-        return (k + 1 - first) * 2 + first - 1;
+        // return (k + 1 - first) * 2 + first + 1;
+        return (k - first) * dAry + first + 1;
     }
 
     /**
@@ -275,6 +293,7 @@ public class PriorityQueue<K> implements Iterable<K> {
     private final K[] binHeap; // binHeap[i] is ith element of binary heap (first element is reserved)
     private int last; // number of elements in the binary heap
     private final boolean floyd; //Determine whether floyd's snake method is on or off inside the take method
+    private int dAry;
 
     public static void main(String[] args) {
         doMain();
