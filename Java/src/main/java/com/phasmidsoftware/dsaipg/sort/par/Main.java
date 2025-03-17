@@ -4,7 +4,11 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ForkJoinPool;
 
 /**
@@ -12,6 +16,7 @@ import java.util.concurrent.ForkJoinPool;
  * CONSIDER tidy it up a bit.
  */
 public class Main {
+
 
     /**
      * The main method serves as the entry point for the program. It processes command-line arguments,
@@ -26,17 +31,26 @@ public class Main {
         Random random = new Random();
         int[] array = new int[2000000];
         Collection<Long> timeList = new ArrayList<>();
+
         for (int j = 50; j < 100; j++) {
-            ParSort.cutoff = 10000 * (j + 1);
-            // for (int i = 0; i < array.length; i++) array[i] = random.nextInt(10000000);
-            long time;
-            long startTime = System.currentTimeMillis();
+            ParSort.cutoff = 1000 * (j + 1);
+            // ParSort.cutoff = 8000;
+            ParSort.maxDepth = 2;
+
+            // I found that if uncomment the following code, the whole program will be much faster, maybe this line warm up the JVM and memory
+            for (int i = 0; i < array.length; i++) array[i] = random.nextInt(10000000);
+
+
+            long time = 0;
+
             for (int t = 0; t < 10; t++) {
                 for (int i = 0; i < array.length; i++) array[i] = random.nextInt(10000000);
-                ParSort.sort(array, 0, array.length);
+                long startTime = System.currentTimeMillis();
+                ParSort.sort(array, 0, array.length, 0);
+                long endTime = System.currentTimeMillis();
+                time += (endTime - startTime);
             }
-            long endTime = System.currentTimeMillis();
-            time = (endTime - startTime);
+
             timeList.add(time);
 
 
