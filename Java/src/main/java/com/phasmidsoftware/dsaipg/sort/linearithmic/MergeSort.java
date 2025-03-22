@@ -1,14 +1,15 @@
 package com.phasmidsoftware.dsaipg.sort.linearithmic;
 
+import java.util.Arrays;
+
 import com.phasmidsoftware.dsaipg.sort.elementary.InsertionSort;
 import com.phasmidsoftware.dsaipg.sort.generic.SortException;
 import com.phasmidsoftware.dsaipg.sort.generic.SortWithComparableHelper;
 import com.phasmidsoftware.dsaipg.sort.helper.Helper;
 import com.phasmidsoftware.dsaipg.util.config.Config;
-
-import java.util.Arrays;
-
-import static com.phasmidsoftware.dsaipg.util.config.Config_Benchmark.*;
+import static com.phasmidsoftware.dsaipg.util.config.Config_Benchmark.CUTOFF;
+import static com.phasmidsoftware.dsaipg.util.config.Config_Benchmark.CUTOFF_DEFAULT;
+import static com.phasmidsoftware.dsaipg.util.config.Config_Benchmark.HELPER;
 
 /**
  * A generic implementation of the MergeSort algorithm for sorting elements of type X,
@@ -145,7 +146,37 @@ public class MergeSort<X extends Comparable<X>> extends SortWithComparableHelper
         }
 
         // TO BE IMPLEMENTED  : implement merge sort with insurance and no-copy optimizations
-throw new RuntimeException("implementation missing");
+        int mid = from + (to - from) / 2;
+
+        if (noCopy) {
+
+            sort(aux, a, from, mid);
+            sort(aux, a, mid, to);
+            
+
+            if (insurance && !helper.less(aux[mid], aux[mid-1])) {
+
+                helper.copyBlock(aux, from, a, from, to - from);
+                // System.arraycopy(aux, from, a, from, to - from);
+                return;
+            }
+            
+            // Merge from aux to a
+            merge(aux, a, from, mid, to);
+        } else {
+
+            sort(a, aux, from, mid);
+            sort(a, aux, mid, to);
+
+            if (insurance && !helper.less(a[mid], a[mid-1])) {
+                return;
+            }
+            
+            helper.copyBlock(a, from, aux, from, to - from);
+            // System.arraycopy(a, from, aux, from, to - from);
+            
+            merge(aux, a, from, mid, to);
+        }
     }
 
     /**

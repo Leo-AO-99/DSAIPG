@@ -1,11 +1,11 @@
 package com.phasmidsoftware.dsaipg.util.benchmark;
 
-import com.phasmidsoftware.dsaipg.util.logging.LazyLogger;
-
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+
+import com.phasmidsoftware.dsaipg.util.logging.LazyLogger;
 
 /**
  * Class which is able to time the running of functions.
@@ -70,7 +70,32 @@ public class Timer {
      */
     public <T, U> double repeat(int n, boolean warmup, Supplier<T> supplier, Function<T, U> function, UnaryOperator<T> preFunction, Consumer<U> postFunction) {
         // TO BE IMPLEMENTED : note that the timer is running when this method is called and should still be running when it returns.
-         return 0;
+        if (warmup) {
+            pause();
+            for (int i = 0; i < n; i++) {
+                T t = supplier.get();
+                if (preFunction != null) t = preFunction.apply(t);
+                U u = function.apply(t);
+                if (postFunction != null) postFunction.accept(u);
+            }
+            resume();
+            return 0;
+        }
+        for (int i = 0; i < n; i++) {
+            pause();
+            T t = supplier.get();
+            if (preFunction != null) t = preFunction.apply(t);
+            resume();
+            U u = function.apply(t);
+            pause();
+            if (postFunction != null) postFunction.accept(u);
+            resume();
+            lap();
+        }
+        pause();
+        final double result = meanLapTime();
+        resume();
+        return result;
         // END SOLUTION
     }
 
@@ -245,7 +270,7 @@ public class Timer {
      */
     private static long getClock() {
         // TO BE IMPLEMENTED 
-         return 0;
+        return System.nanoTime();
         // END SOLUTION
     }
 
@@ -258,7 +283,7 @@ public class Timer {
      */
     private static double toMillisecs(long ticks) {
         // TO BE IMPLEMENTED 
-         return 0;
+        return ticks / 1e6;
         // END SOLUTION
     }
 
