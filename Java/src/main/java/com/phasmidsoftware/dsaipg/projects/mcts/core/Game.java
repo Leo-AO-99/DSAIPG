@@ -22,4 +22,4 @@
       * @return a non-negative integer.
       */
      int opener();
- }
+}
