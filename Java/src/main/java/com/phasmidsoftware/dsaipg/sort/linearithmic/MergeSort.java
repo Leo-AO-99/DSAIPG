@@ -154,7 +154,7 @@ public class MergeSort<X extends Comparable<X>> extends SortWithComparableHelper
             sort(aux, a, mid, to);
             
 
-            if (insurance && !helper.less(aux[mid], aux[mid-1])) {
+            if (insurance && !helper.less(aux, mid, mid-1)) {
 
                 helper.copyBlock(aux, from, a, from, to - from);
                 // System.arraycopy(aux, from, a, from, to - from);
@@ -168,7 +168,7 @@ public class MergeSort<X extends Comparable<X>> extends SortWithComparableHelper
             sort(a, aux, from, mid);
             sort(a, aux, mid, to);
 
-            if (insurance && !helper.less(a[mid], a[mid-1])) {
+            if (insurance && !helper.less(a, mid, mid-1)) {
                 return;
             }
             
